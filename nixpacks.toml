@@ -1,11 +1,16 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Packages.composer"]
+nixPkgs = [
+  "php82",
+  "php82Packages.composer",
+  "php82Extensions.pdo",
+  "php82Extensions.pdo_mysql"
+]
 
 [phases.build]
 cmds = [
   "composer install --no-dev --optimize-autoloader",
-  "php artisan config:cache",
-  "php artisan route:cache"
+  "php artisan config:clear",
+  "php artisan cache:clear"
 ]
 
 [start]
