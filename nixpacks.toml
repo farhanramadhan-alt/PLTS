@@ -1,9 +1,10 @@
 [phases.setup]
-nixPkgs = [
-  "php82",
-  "php82Packages.composer",
-  "php82Extensions.pdo",
-  "php82Extensions.pdo_mysql"
+nixPkgs = ["php82", "php82Packages.composer"]
+
+[phases.install]
+cmds = [
+  "apt-get update",
+  "apt-get install -y php8.2-mysql"
 ]
 
 [phases.build]
