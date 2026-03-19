@@ -101,6 +101,26 @@
             box-shadow: 0 0 0 5px rgba(12, 55, 34, 0.24);
         }
 
+        .live-badge.offline {
+            border-color: rgba(255, 95, 143, 0.4);
+            background: rgba(117, 34, 56, 0.35);
+            color: #ff7b9f;
+            box-shadow: 0 0 0 5px rgba(75, 22, 38, 0.24);
+        }
+
+        .live-badge.offline .live-dot {
+            background: #ff7b9f;
+            box-shadow: 0 0 12px #ff7b9f;
+            animation: none;
+            opacity: 0.6;
+        }
+
+        .offline-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
         .live-dot {
             width: 10px;
             height: 10px;
@@ -127,6 +147,11 @@
             min-height: 142px;
             position: relative;
             overflow: hidden;
+        }
+
+        .stat-card.offline {
+            opacity: 0.65;
+            filter: grayscale(0.3);
         }
 
         .stat-card::after {
@@ -409,14 +434,19 @@
                 </div>
                 <h1 class="brand-title">LAB PV</h1>
             </div>
-            <div class="live-badge">
+            <div class="live-badge {{ $isOffline ? 'offline' : '' }}" id="statusBadge">
                 <span class="live-dot"></span>
-                LIVE MONITORING
+                <div>
+                    <div>{{ $isOffline ? 'OFFLINE' : 'LIVE MONITORING' }}</div>
+                    @if ($isOffline)
+                        <div class="offline-text">Last update {{ $lastUpdateTime }}</div>
+                    @endif
+                </div>
             </div>
         </header>
 
         <section class="stats-grid">
-            <article class="panel stat-card voltage">
+            <article class="panel stat-card voltage {{ $isOffline ? 'offline' : '' }}">
                 <div class="stat-head">
                     <p class="stat-label">VOLTAGE</p>
                     <div class="icon-chip">V</div>
@@ -428,7 +458,7 @@
                 </span>
             </article>
 
-            <article class="panel stat-card current">
+            <article class="panel stat-card current {{ $isOffline ? 'offline' : '' }}">
                 <div class="stat-head">
                     <p class="stat-label">CURRENT</p>
                     <div class="icon-chip">A</div>
@@ -440,7 +470,7 @@
                 </span>
             </article>
 
-            <article class="panel stat-card lux">
+            <article class="panel stat-card lux {{ $isOffline ? 'offline' : '' }}">
                 <div class="stat-head">
                     <p class="stat-label">LUX</p>
                     <div class="icon-chip">L</div>
@@ -452,7 +482,7 @@
                 </span>
             </article>
 
-            <article class="panel stat-card temp">
+            <article class="panel stat-card temp {{ $isOffline ? 'offline' : '' }}">
                 <div class="stat-head">
                     <p class="stat-label">TEMP</p>
                     <div class="icon-chip">T</div>

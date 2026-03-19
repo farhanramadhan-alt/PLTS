@@ -14,9 +14,13 @@ class PvDashboardController extends Controller
     public function index()
     {
         $latest = PvData::getLatest();
+        $isOffline = PvData::isOffline();
+        $lastUpdateTime = PvData::lastUpdateTime();
 
         return view('dashboard.pv', [
             'latest' => $latest,
+            'isOffline' => $isOffline,
+            'lastUpdateTime' => $lastUpdateTime,
         ]);
     }
 

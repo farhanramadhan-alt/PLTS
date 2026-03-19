@@ -46,6 +46,35 @@ class PvData extends Model
     }
 
     /**
+     * Check if the device is offline (no data received for 5 minutes)
+     */
+    public static function isOffline()
+    {
+        $latest = self::latest()->first();
+        
+        if (!$latest) {
+            return true; // No data at all
+        }
+
+        // Check if the last update was more than 5 minutes ago
+        return $latest->updated_at->diffInMinutes(now()) >= 5;
+    }
+
+    /**
+     * Get the time since last update in human-readable format
+     */
+    public static function lastUpdateTime()
+    {
+        $latest = self::latest()->first();
+        
+        if (!$latest) {
+            return 'No data';
+        }
+
+        return $latest->updated_at->diffForHumans();
+    }
+
+    /**
      * Get data within a date range for charts
      */
     public static function getChartData($startDate = null, $endDate = null, $limit = 100)
