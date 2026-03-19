@@ -507,8 +507,8 @@
                 <canvas id="powerChart"></canvas>
             </div>
             <div class="toolbar" id="powerTabs">
-                <button class="tab-btn active" data-period="1H">1H</button>
-                <button class="tab-btn" data-period="24H">24H</button>
+                <button class="tab-btn" data-period="1H">1H</button>
+                <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
             </div>
         </section>
@@ -550,8 +550,8 @@
                 <canvas id="parameterChart"></canvas>
             </div>
             <div class="toolbar" id="paramTabs">
-                <button class="tab-btn active" data-period="1H">1H</button>
-                <button class="tab-btn" data-period="24H">24H</button>
+                <button class="tab-btn" data-period="1H">1H</button>
+                <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
             </div>
         </section>
@@ -562,9 +562,9 @@
         let environmentChart;
         let parameterChart;
 
-        let powerPeriod = '1H';
+        let powerPeriod = '24H';
         let envPeriod = '24H';
-        let parameterPeriod = '1H';
+        let parameterPeriod = '24H';
         let selectedParameter = 'lux';
         const POLLING_INTERVAL_MS = 5000;
         let isRefreshing = false;
