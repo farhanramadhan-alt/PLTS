@@ -827,12 +827,13 @@
 
                     const latest = response.data;
                     const isOffline = response.isOffline;
+                    const lastUpdateTime = response.lastUpdateTime;
 
                     // Update status badge
                     const statusBadge = document.getElementById('statusBadge');
                     if (isOffline) {
                         statusBadge.classList.add('offline');
-                        statusBadge.innerHTML = '<span class="live-dot"></span><div><div>OFFLINE</div><div class="offline-text">Data tidak diperbarui</div></div>';
+                        statusBadge.innerHTML = '<span class="live-dot"></span><div><div>OFFLINE</div><div class="offline-text">Last update ' + lastUpdateTime + '</div></div>';
                     } else {
                         statusBadge.classList.remove('offline');
                         statusBadge.innerHTML = '<span class="live-dot"></span>LIVE MONITORING';
