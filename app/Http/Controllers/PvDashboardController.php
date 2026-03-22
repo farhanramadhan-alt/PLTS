@@ -34,7 +34,8 @@ class PvDashboardController extends Controller
 
         $data = $this->getDataByPeriod($period);
 
-        $labels = $data->map(fn ($item) => $item->created_at->format('H:i'));
+        $format = $this->getTimestampFormat($period);
+        $labels = $data->map(fn ($item) => $item->created_at->format($format));
         $values = match ($parameter) {
             'voltage' => $data->pluck('voltage'),
             'current' => $data->pluck('current'),
@@ -60,7 +61,8 @@ class PvDashboardController extends Controller
 
         $data = $this->getDataByPeriod($period);
 
-        $labels = $data->map(fn ($item) => $item->created_at->format('H:i'));
+        $format = $this->getTimestampFormat($period);
+        $labels = $data->map(fn ($item) => $item->created_at->format($format));
         $voltageData = $data->pluck('voltage');
         $currentData = $data->pluck('current');
 
@@ -81,7 +83,8 @@ class PvDashboardController extends Controller
 
         $data = $this->getDataByPeriod($period);
 
-        $labels = $data->map(fn ($item) => $item->created_at->format('H:i'));
+        $format = $this->getTimestampFormat($period);
+        $labels = $data->map(fn ($item) => $item->created_at->format($format));
         $tempData = $data->pluck('temperature');
         $luxData = $data->pluck('lux');
 
@@ -91,6 +94,19 @@ class PvDashboardController extends Controller
             'lux' => $luxData->values(),
             'success' => true,
         ]);
+    }
+
+    /**
+     * Get timestamp format based on period
+     */
+    private function getTimestampFormat($period)
+    {
+        return match ($period) {
+            '1H' => 'H:i',                    // 17:15
+            '24H' => 'd-m H:i',              // 23-03 17:15
+            '7D' => 'd-m-Y',                 // 23-03-2026
+            default => 'H:i',
+        };
     }
 
     /**

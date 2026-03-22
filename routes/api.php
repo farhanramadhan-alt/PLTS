@@ -25,7 +25,7 @@ Route::prefix('pv')->group(function () {
     Route::get('/latest', function () {
         $latest = \App\Models\PvData::getLatest();
         $isOffline = \App\Models\PvData::isOffline();
-        $lastUpdateTime = $latest ? $latest->updated_at->format('H:i') : null;
+        $lastUpdateTime = $latest ? $latest->updated_at->format('Y-m-d l H:i') : null; // Format: 2026-03-23 Monday 17:15
         
         return response()->json([
             'success' => true,
