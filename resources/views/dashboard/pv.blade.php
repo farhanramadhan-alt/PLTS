@@ -566,7 +566,7 @@
         let envPeriod = '24H';
         let parameterPeriod = '24H';
         let selectedParameter = 'lux';
-        const POLLING_INTERVAL_MS = 5000;
+        const POLLING_INTERVAL_MS = 1800000; // 30 minutes
         let isRefreshing = false;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -614,6 +614,12 @@
                             color: '#7687ad',
                             maxTicksLimit: 10,
                         },
+                        title: {
+                            display: true,
+                            text: 'Waktu',
+                            color: '#c2d3f4',
+                            font: { size: 14, weight: 'bold' },
+                        },
                     },
                     y: {
                         beginAtZero: true,
@@ -625,6 +631,14 @@
         }
 
         function initPowerChart() {
+            const options = chartBaseOptions();
+            options.scales.y.title = {
+                display: true,
+                text: 'Tegangan (V) & Arus (A)',
+                color: '#c2d3f4',
+                font: { size: 14, weight: 'bold' },
+            };
+            
             powerChart = new Chart(document.getElementById('powerChart').getContext('2d'), {
                 type: 'line',
                 data: {
@@ -654,11 +668,19 @@
                         }
                     ],
                 },
-                options: chartBaseOptions(),
+                options: options,
             });
         }
 
         function initEnvironmentChart() {
+            const options = chartBaseOptions();
+            options.scales.y.title = {
+                display: true,
+                text: 'Lux & Suhu (°C)',
+                color: '#c2d3f4',
+                font: { size: 14, weight: 'bold' },
+            };
+            
             environmentChart = new Chart(document.getElementById('environmentChart').getContext('2d'), {
                 type: 'line',
                 data: {
@@ -688,11 +710,19 @@
                         },
                     ],
                 },
-                options: chartBaseOptions(),
+                options: options,
             });
         }
 
         function initParameterChart() {
+            const options = chartBaseOptions();
+            options.scales.y.title = {
+                display: true,
+                text: 'Nilai Parameter',
+                color: '#c2d3f4',
+                font: { size: 14, weight: 'bold' },
+            };
+            
             parameterChart = new Chart(document.getElementById('parameterChart').getContext('2d'), {
                 type: 'line',
                 data: {
@@ -711,7 +741,7 @@
                         },
                     ],
                 },
-                options: chartBaseOptions(),
+                options: options,
             });
         }
 
@@ -814,6 +844,7 @@
                     parameterChart.data.labels = response.labels;
                     parameterChart.data.datasets[0].label = labelMap[selectedParameter] || 'Parameter';
                     parameterChart.data.datasets[0].data = response.data;
+                    parameterChart.options.scales.y.title.text = labelMap[selectedParameter] || 'Nilai Parameter';
                     parameterChart.update();
                 });
         }
