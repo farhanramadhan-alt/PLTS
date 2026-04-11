@@ -75,7 +75,7 @@ class PvData extends Model
     }
 
     /**
-     * Get data within a date range for charts
+     * Get data within a date range for charts with 30-minute sampling
      */
     public static function getChartData($startDate = null, $endDate = null, $limit = 100)
     {
@@ -89,6 +89,31 @@ class PvData extends Model
             $query->where('created_at', '<=', $endDate);
         }
 
-        return $query->orderBy('created_at', 'asc')->limit($limit)->get();
+        $allData = $query->orderBy('created_at', 'asc')->get();
+
+        // Sample data every 30 minutes
+        if ($allData->isEmpty()) {
+            return collect([]);
+        }
+
+        $sampledData = collect();
+        $lastSampledTime = null;
+        $intervalMinutes = 30;
+
+        foreach ($allData as $item) {
+            if ($lastSampledTime === null) {
+                // Always include the first item
+                $sampledData->push($item);
+                $lastSampledTime = $item->created_at;
+            } else {
+                // Include if at least 30 minutes have passed since last sample
+                if ($item->created_at->diffInMinutes($lastSampledTime) >= $intervalMinutes) {
+                    $sampledData->push($item);
+                    $lastSampledTime = $item->created_at;
+                }
+            }
+        }
+
+        return $sampledData;
     }
 }
