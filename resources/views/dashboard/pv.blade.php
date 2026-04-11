@@ -612,7 +612,7 @@
                         grid: { color: 'rgba(75, 106, 168, 0.22)' },
                         ticks: {
                             color: '#7687ad',
-                            maxTicksLimit: 10,
+                            maxTicksLimit: 20,
                         },
                         title: {
                             display: true,
