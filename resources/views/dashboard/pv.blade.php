@@ -965,6 +965,7 @@
             
             const store = chartDataStore[storeKey];
 
+            // Mouse events
             canvas.addEventListener('mousedown', (e) => {
                 store.isDragging = true;
                 store.startX = e.clientX;
@@ -989,6 +990,32 @@
             document.addEventListener('mouseup', () => {
                 store.isDragging = false;
                 canvas.style.cursor = 'grab';
+            });
+
+            // Touch events for mobile/tablet
+            canvas.addEventListener('touchstart', (e) => {
+                store.isDragging = true;
+                store.startX = e.touches[0].clientX;
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!store.isDragging) return;
+                e.preventDefault();
+
+                const deltaX = e.touches[0].clientX - store.startX;
+                const direction = deltaX > 0 ? -1 : 1;
+                
+                const totalPoints = store.fullLabels?.length || 0;
+                const maxOffset = Math.max(0, totalPoints - VISIBLE_POINTS);
+                
+                store.scrollOffset = Math.max(0, Math.min(maxOffset, store.scrollOffset + direction * 2));
+                updateDisplayedData(storeKey);
+                
+                store.startX = e.touches[0].clientX;
+            });
+
+            canvas.addEventListener('touchend', () => {
+                store.isDragging = false;
             });
 
             canvas.style.cursor = 'grab';
