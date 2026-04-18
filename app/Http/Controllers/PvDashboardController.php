@@ -136,7 +136,13 @@ class PvDashboardController extends Controller
      */
     public function ingest(Request $request)
     {
-        \Log::info('Ingest request received', $request->all());
+        \Log::info('Ingest request received', [
+            'api_key' => $request->input('api_key'),
+            'voltage' => $request->input('voltage'),
+            'current' => $request->input('current'),
+            'temperature' => $request->input('temperature'),
+            'lux' => $request->input('lux'),
+        ]);
         
         $validated = $request->validate([
             'api_key' => 'required|string',
@@ -149,13 +155,37 @@ class PvDashboardController extends Controller
         ]);
 
         $expectedApiKey = config('services.pv_sensor.api_key');
-        \Log::info('API Key check', [
+        
+        \Log::info('API Key Debug', [
             'received' => $validated['api_key'],
             'expected' => $expectedApiKey,
+            'expected_is_null' => $expectedApiKey === null,
+            'env_raw' => env('PV_SENSOR_API_KEY'),
             'match' => $validated['api_key'] === $expectedApiKey
         ]);
         
-        if (empty($expectedApiKey) || $validated['api_key'] !== $expectedApiKey) {
+        // Debug: If no API key is set in env, show what's available
+        if (empty($expectedApiKey)) {
+            \Log::error('API Key not configured in environment!', [
+                'available_env' => getenv('PV_SENSOR_API_KEY'),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Server API Key not configured - contact administrator',
+                'debug' => [
+                    'received_key' => $validated['api_key'],
+                    'expected_key' => $expectedApiKey ?? 'NOT SET',
+                ]
+            ], 500);
+        }
+        
+        if ($validated['api_key'] !== $expectedApiKey) {
+            \Log::warning('API Key mismatch', [
+                'received' => $validated['api_key'],
+                'expected' => $expectedApiKey,
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'API key tidak valid',
