@@ -136,6 +136,8 @@ class PvDashboardController extends Controller
      */
     public function ingest(Request $request)
     {
+        \Log::info('Ingest request received', $request->all());
+        
         $validated = $request->validate([
             'api_key' => 'required|string',
             'voltage' => 'required|numeric',
@@ -147,6 +149,12 @@ class PvDashboardController extends Controller
         ]);
 
         $expectedApiKey = config('services.pv_sensor.api_key');
+        \Log::info('API Key check', [
+            'received' => $validated['api_key'],
+            'expected' => $expectedApiKey,
+            'match' => $validated['api_key'] === $expectedApiKey
+        ]);
+        
         if (empty($expectedApiKey) || $validated['api_key'] !== $expectedApiKey) {
             return response()->json([
                 'success' => false,
@@ -171,6 +179,7 @@ class PvDashboardController extends Controller
         ];
 
         $pvData = $this->persistData($payload);
+        \Log::info('Data saved successfully', ['id' => $pvData->id, 'updated_at' => $pvData->updated_at]);
 
         return response()->json([
             'success' => true,
