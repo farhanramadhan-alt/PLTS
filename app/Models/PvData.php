@@ -98,7 +98,7 @@ class PvData extends Model
 
         $sampledData = collect();
         $lastSampledTime = null;
-        $intervalMinutes = 30;
+        $intervalMinutes = 1; // Changed from 30 to 1 minute for testing
 
         foreach ($allData as $item) {
             if ($lastSampledTime === null) {
@@ -106,7 +106,7 @@ class PvData extends Model
                 $sampledData->push($item);
                 $lastSampledTime = $item->created_at;
             } else {
-                // Include if at least 30 minutes have passed since last sample
+                // Include if at least 1 minute have passed since last sample
                 if ($item->created_at->diffInMinutes($lastSampledTime) >= $intervalMinutes) {
                     $sampledData->push($item);
                     $lastSampledTime = $item->created_at;
