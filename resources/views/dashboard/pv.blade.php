@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.1.0/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         :root {
             --bg-main: #03091d;
@@ -510,6 +511,7 @@
                 <button class="tab-btn" data-period="1H">1H</button>
                 <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
+                <button class="tab-btn" id="powerResetZoom" onclick="resetPowerZoom()" style="margin-left: auto;">🔄 Reset Zoom</button>
             </div>
         </section>
 
@@ -530,6 +532,7 @@
                 <button class="tab-btn" data-period="1H">1H</button>
                 <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
+                <button class="tab-btn" id="envResetZoom" onclick="resetEnvZoom()" style="margin-left: auto;">🔄 Reset Zoom</button>
             </div>
         </section>
 
@@ -553,6 +556,7 @@
                 <button class="tab-btn" data-period="1H">1H</button>
                 <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
+                <button class="tab-btn" id="paramResetZoom" onclick="resetParamZoom()" style="margin-left: auto;">🔄 Reset Zoom</button>
             </div>
         </section>
     </div>
@@ -606,6 +610,27 @@
                 },
                 plugins: {
                     legend: { display: false },
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                                speed: 0.1,
+                            },
+                            pinch: {
+                                enabled: true,
+                            },
+                            mode: 'xy',
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'xy',
+                            modifierKey: 'ctrl',
+                        },
+                        limits: {
+                            x: { min: 'original', max: 'original' },
+                            y: { min: 'original', max: 'original' }
+                        }
+                    },
                 },
                 scales: {
                     x: {
@@ -616,9 +641,9 @@
                         },
                         title: {
                             display: true,
-                            text: 'Waktu',
+                            text: 'Waktu (Drag untuk geser | Scroll untuk zoom)',
                             color: '#c2d3f4',
-                            font: { size: 14, weight: 'bold' },
+                            font: { size: 12, weight: 'bold' },
                         },
                     },
                     y: {
@@ -938,6 +963,25 @@
 
             el.className = 'stat-change neutral';
             el.innerHTML = '0.0%<small>vs last hour</small>';
+        }
+
+        // =========== ZOOM RESET FUNCTIONS ===========
+        function resetPowerZoom() {
+            if (powerChart) {
+                powerChart.resetZoom();
+            }
+        }
+
+        function resetEnvZoom() {
+            if (environmentChart) {
+                environmentChart.resetZoom();
+            }
+        }
+
+        function resetParamZoom() {
+            if (parameterChart) {
+                parameterChart.resetZoom();
+            }
         }
     </script>
 </body>
