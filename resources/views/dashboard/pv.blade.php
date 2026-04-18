@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.1.0/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         :root {
             --bg-main: #03091d;
@@ -511,7 +510,7 @@
                 <button class="tab-btn" data-period="1H">1H</button>
                 <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
-                <button class="tab-btn" id="powerResetZoom" onclick="resetPowerZoom()" style="margin-left: auto;">🔄 Reset Zoom</button>
+
             </div>
         </section>
 
@@ -532,7 +531,7 @@
                 <button class="tab-btn" data-period="1H">1H</button>
                 <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
-                <button class="tab-btn" id="envResetZoom" onclick="resetEnvZoom()" style="margin-left: auto;">🔄 Reset Zoom</button>
+
             </div>
         </section>
 
@@ -556,7 +555,7 @@
                 <button class="tab-btn" data-period="1H">1H</button>
                 <button class="tab-btn active" data-period="24H">24H</button>
                 <button class="tab-btn" data-period="7D">7D</button>
-                <button class="tab-btn" id="paramResetZoom" onclick="resetParamZoom()" style="margin-left: auto;">🔄 Reset Zoom</button>
+
             </div>
         </section>
     </div>
@@ -610,27 +609,6 @@
                 },
                 plugins: {
                     legend: { display: false },
-                    zoom: {
-                        zoom: {
-                            wheel: {
-                                enabled: true,
-                                speed: 0.1,
-                            },
-                            pinch: {
-                                enabled: true,
-                            },
-                            mode: 'xy',
-                        },
-                        pan: {
-                            enabled: true,
-                            mode: 'xy',
-                            modifierKey: 'ctrl',
-                        },
-                        limits: {
-                            x: { min: 'original', max: 'original' },
-                            y: { min: 'original', max: 'original' }
-                        }
-                    },
                 },
                 scales: {
                     x: {
@@ -641,7 +619,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Waktu (Drag untuk geser | Scroll untuk zoom)',
+                            text: 'Waktu',
                             color: '#c2d3f4',
                             font: { size: 12, weight: 'bold' },
                         },
@@ -965,24 +943,79 @@
             el.innerHTML = '0.0%<small>vs last hour</small>';
         }
 
-        // =========== ZOOM RESET FUNCTIONS ===========
-        function resetPowerZoom() {
-            if (powerChart) {
-                powerChart.resetZoom();
-            }
+        // =========== CUSTOM PAN IMPLEMENTATION ===========
+        let chartPanState = {
+            powerChart: { isDragging: false, startX: 0, scrollOffset: 0 },
+            environmentChart: { isDragging: false, startX: 0, scrollOffset: 0 },
+            parameterChart: { isDragging: false, startX: 0, scrollOffset: 0 },
+        };
+
+        function enableChartPan(chartInstance, canvasId, stateKey) {
+            const canvas = document.getElementById(canvasId);
+            const state = chartPanState[stateKey];
+
+            canvas.addEventListener('mousedown', (e) => {
+                state.isDragging = true;
+                state.startX = e.clientX;
+                canvas.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!state.isDragging) return;
+
+                const deltaX = e.clientX - state.startX;
+                const pixelPerPoint = canvas.width / (chartInstance.data.labels?.length || 1);
+                const dataPointsToScroll = Math.round(deltaX / pixelPerPoint / 2);
+
+                const maxOffset = Math.max(0, chartInstance.data.labels?.length - 15 || 0);
+                state.scrollOffset = Math.max(0, Math.min(maxOffset, state.scrollOffset - dataPointsToScroll));
+
+                updateChartScroll(chartInstance, state.scrollOffset);
+                state.startX = e.clientX;
+            });
+
+            document.addEventListener('mouseup', () => {
+                state.isDragging = false;
+                canvas.style.cursor = 'grab';
+            });
+
+            canvas.style.cursor = 'grab';
         }
 
-        function resetEnvZoom() {
-            if (environmentChart) {
-                environmentChart.resetZoom();
+        function updateChartScroll(chartInstance, offset) {
+            const visiblePoints = 15;
+            const totalPoints = chartInstance.data.labels?.length || 0;
+            
+            if (totalPoints <= visiblePoints) {
+                chartInstance.options.scales.x.min = undefined;
+                chartInstance.options.scales.x.max = undefined;
+            } else {
+                chartInstance.options.scales.x.min = offset;
+                chartInstance.options.scales.x.max = offset + visiblePoints - 1;
             }
+            
+            chartInstance.update('none');
         }
 
-        function resetParamZoom() {
-            if (parameterChart) {
-                parameterChart.resetZoom();
-            }
-        }
+        // Original init functions wrapped with pan enabled
+        const originalInitPowerChart = initPowerChart;
+        initPowerChart = function() {
+            originalInitPowerChart();
+            setTimeout(() => enableChartPan(powerChart, 'powerChart', 'powerChart'), 100);
+        };
+
+        const originalInitEnvironmentChart = initEnvironmentChart;
+        initEnvironmentChart = function() {
+            originalInitEnvironmentChart();
+            setTimeout(() => enableChartPan(environmentChart, 'environmentChart', 'environmentChart'), 100);
+        };
+
+        const originalInitParameterChart = initParameterChart;
+        initParameterChart = function() {
+            originalInitParameterChart();
+            setTimeout(() => enableChartPan(parameterChart, 'parameterChart', 'parameterChart'), 100);
+        };
+
     </script>
 </body>
 </html>
