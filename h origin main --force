@@ -1,0 +1,95 @@
+[33mcommit 0b8dacc6d6dfb93e60b9d5788c0e2c2043312b30[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Sat Apr 11 11:00:12 2026 +0700
+
+    20 data
+
+[33mcommit 1cefe68542c0ae723b54df355d2e0bcc0de1e184[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Sat Apr 11 10:53:07 2026 +0700
+
+    grafik
+
+[33mcommit 36e2abac6effc4f90d3fcc2b9d1b462f2d32f58b[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Sat Apr 11 10:45:38 2026 +0700
+
+    grafik
+
+[33mcommit 8753529abb907309ec0099283981bfbb43dbe014[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Mon Mar 23 00:26:43 2026 +0700
+
+    timestamp
+
+[33mcommit 44300a75edfb79e9d62924caede5e748112dfcfb[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 18:50:33 2026 +0700
+
+    24 H
+
+[33mcommit 4624ff5b3942bfe7be3cb72280c7b3cbc764eab8[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 18:46:09 2026 +0700
+
+    add time
+
+[33mcommit 029fa12c2692a2d3f73c79629b775ab7beb4a3a0[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 18:09:25 2026 +0700
+
+    show -- on metric when offline
+
+[33mcommit 75f24158a6dc6b872ec6339b60be456acb2789e3[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 18:06:18 2026 +0700
+
+    add --
+
+[33mcommit ee8ab89a4aff24e04552e2a641f07dcca74360bd[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 18:03:11 2026 +0700
+
+    add online/offline status indicator
+
+[33mcommit a9d8243dd0492a201b321ea753c02814c94b04f5[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 17:15:54 2026 +0700
+
+    fix decimal 2 digit
+
+[33mcommit 2fca66ac3bd9d0ec69cec7949d9286498f08ca1b[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 17:02:04 2026 +0700
+
+    fix timezone Asia/Jakarta
+
+[33mcommit b2ba3e5aed89f32b212176327b30233649e155c9[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 14:23:55 2026 +0700
+
+    fix mysql driver railway
+
+[33mcommit 654dd6f166ac24c18f5a2a51d4b04a93ab2cfb41[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 14:21:36 2026 +0700
+
+    fix mysql driver
+
+[33mcommit 4c326983ff2c21e27daae94bebd4d853eb8804ac[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 14:18:42 2026 +0700
+
+    fix php version
+
+[33mcommit b6e4e40473cd85fd65d3d6c438318fb4cecfdbf7[m
+Author: unknown <3332220068@untirta.ac.id>
+Date:   Thu Mar 19 14:00:39 2026 +0700
+
+    first commit
+
+[33mcommit 3f07f2647351ea8f518be9f3364d534a45191f3c[m
+Author: unknown <haris.irwadi123@gmail.com>
+Date:   Thu Mar 19 07:37:46 2026 +0700
+
+    first commit
