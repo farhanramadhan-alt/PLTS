@@ -576,6 +576,7 @@
             initPowerChart();
             initEnvironmentChart();
             initParameterChart();
+            setupChartPan();
             bindTabHandlers();
             bindParameterHandler();
 
@@ -943,77 +944,140 @@
             el.innerHTML = '0.0%<small>vs last hour</small>';
         }
 
-        // =========== CUSTOM PAN IMPLEMENTATION ===========
-        let chartPanState = {
-            powerChart: { isDragging: false, startX: 0, scrollOffset: 0 },
-            environmentChart: { isDragging: false, startX: 0, scrollOffset: 0 },
-            parameterChart: { isDragging: false, startX: 0, scrollOffset: 0 },
+        // =========== CUSTOM PAN/DRAG IMPLEMENTATION ===========
+        let chartDataStore = {
+            powerChart: { fullLabels: [], fullVoltage: [], fullCurrent: [], scrollOffset: 0, isDragging: false, startX: 0 },
+            environmentChart: { fullLabels: [], fullLux: [], fullTemperature: [], scrollOffset: 0, isDragging: false, startX: 0 },
+            parameterChart: { fullLabels: [], fullData: [], scrollOffset: 0, isDragging: false, startX: 0 },
         };
 
-        function enableChartPan(chartInstance, canvasId, stateKey) {
-            const canvas = document.getElementById(canvasId);
-            const state = chartPanState[stateKey];
+        const VISIBLE_POINTS = 15;
+
+        function setupChartPan() {
+            setupSingleChartPan('powerChart', 'powerChart');
+            setupSingleChartPan('environmentChart', 'environmentChart');
+            setupSingleChartPan('parameterChart', 'parameterChart');
+        }
+
+        function setupSingleChartPan(chartId, storeKey) {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            
+            const store = chartDataStore[storeKey];
 
             canvas.addEventListener('mousedown', (e) => {
-                state.isDragging = true;
-                state.startX = e.clientX;
+                store.isDragging = true;
+                store.startX = e.clientX;
                 canvas.style.cursor = 'grabbing';
             });
 
             document.addEventListener('mousemove', (e) => {
-                if (!state.isDragging) return;
+                if (!store.isDragging) return;
 
-                const deltaX = e.clientX - state.startX;
-                const pixelPerPoint = canvas.width / (chartInstance.data.labels?.length || 1);
-                const dataPointsToScroll = Math.round(deltaX / pixelPerPoint / 2);
-
-                const maxOffset = Math.max(0, chartInstance.data.labels?.length - 15 || 0);
-                state.scrollOffset = Math.max(0, Math.min(maxOffset, state.scrollOffset - dataPointsToScroll));
-
-                updateChartScroll(chartInstance, state.scrollOffset);
-                state.startX = e.clientX;
+                const deltaX = e.clientX - store.startX;
+                const direction = deltaX > 0 ? -1 : 1;
+                
+                const totalPoints = store.fullLabels?.length || 0;
+                const maxOffset = Math.max(0, totalPoints - VISIBLE_POINTS);
+                
+                store.scrollOffset = Math.max(0, Math.min(maxOffset, store.scrollOffset + direction * 2));
+                updateDisplayedData(storeKey);
+                
+                store.startX = e.clientX;
             });
 
             document.addEventListener('mouseup', () => {
-                state.isDragging = false;
+                store.isDragging = false;
                 canvas.style.cursor = 'grab';
             });
 
             canvas.style.cursor = 'grab';
         }
 
-        function updateChartScroll(chartInstance, offset) {
-            const visiblePoints = 15;
-            const totalPoints = chartInstance.data.labels?.length || 0;
+        function updateDisplayedData(storeKey) {
+            const store = chartDataStore[storeKey];
+            const endOffset = Math.min(store.scrollOffset + VISIBLE_POINTS, store.fullLabels?.length || 0);
             
-            if (totalPoints <= visiblePoints) {
-                chartInstance.options.scales.x.min = undefined;
-                chartInstance.options.scales.x.max = undefined;
-            } else {
-                chartInstance.options.scales.x.min = offset;
-                chartInstance.options.scales.x.max = offset + visiblePoints - 1;
+            if (storeKey === 'powerChart') {
+                powerChart.data.labels = store.fullLabels.slice(store.scrollOffset, endOffset);
+                powerChart.data.datasets[0].data = store.fullVoltage.slice(store.scrollOffset, endOffset);
+                powerChart.data.datasets[1].data = store.fullCurrent.slice(store.scrollOffset, endOffset);
+                powerChart.update('none');
+            } else if (storeKey === 'environmentChart') {
+                environmentChart.data.labels = store.fullLabels.slice(store.scrollOffset, endOffset);
+                environmentChart.data.datasets[0].data = store.fullLux.slice(store.scrollOffset, endOffset);
+                environmentChart.data.datasets[1].data = store.fullTemperature.slice(store.scrollOffset, endOffset);
+                environmentChart.update('none');
+            } else if (storeKey === 'parameterChart') {
+                parameterChart.data.labels = store.fullLabels.slice(store.scrollOffset, endOffset);
+                parameterChart.data.datasets[0].data = store.fullData.slice(store.scrollOffset, endOffset);
+                parameterChart.update('none');
             }
-            
-            chartInstance.update('none');
         }
 
-        // Original init functions wrapped with pan enabled
-        const originalInitPowerChart = initPowerChart;
-        initPowerChart = function() {
-            originalInitPowerChart();
-            setTimeout(() => enableChartPan(powerChart, 'powerChart', 'powerChart'), 100);
+        function storePowerChartData(labels, voltage, current) {
+            const store = chartDataStore.powerChart;
+            store.fullLabels = labels;
+            store.fullVoltage = voltage;
+            store.fullCurrent = current;
+            store.scrollOffset = Math.max(0, Math.max(0, labels.length - VISIBLE_POINTS));
+            updateDisplayedData('powerChart');
+        }
+
+        function storeEnvironmentChartData(labels, lux, temperature) {
+            const store = chartDataStore.environmentChart;
+            store.fullLabels = labels;
+            store.fullLux = lux;
+            store.fullTemperature = temperature;
+            store.scrollOffset = Math.max(0, Math.max(0, labels.length - VISIBLE_POINTS));
+            updateDisplayedData('environmentChart');
+        }
+
+        function storeParameterChartData(labels, data) {
+            const store = chartDataStore.parameterChart;
+            store.fullLabels = labels;
+            store.fullData = data;
+            store.scrollOffset = Math.max(0, Math.max(0, labels.length - VISIBLE_POINTS));
+            updateDisplayedData('parameterChart');
+        }
+
+        // Wrap original load functions to store full data
+        const originalLoadPowerChart = loadPowerChart;
+        loadPowerChart = function() {
+            fetchJson('/api/pv/power-output?period=' + powerPeriod)
+                .then((response) => {
+                    if (!response.success) return;
+                    storePowerChartData(response.labels, response.voltage, response.current);
+                });
         };
 
-        const originalInitEnvironmentChart = initEnvironmentChart;
-        initEnvironmentChart = function() {
-            originalInitEnvironmentChart();
-            setTimeout(() => enableChartPan(environmentChart, 'environmentChart', 'environmentChart'), 100);
+        const originalLoadEnvironmentChart = loadEnvironmentChart;
+        loadEnvironmentChart = function() {
+            fetchJson('/api/pv/environment?period=' + envPeriod)
+                .then((response) => {
+                    if (!response.success) return;
+                    storeEnvironmentChartData(response.labels, response.lux, response.temperature);
+                });
         };
 
-        const originalInitParameterChart = initParameterChart;
-        initParameterChart = function() {
-            originalInitParameterChart();
-            setTimeout(() => enableChartPan(parameterChart, 'parameterChart', 'parameterChart'), 100);
+        const originalLoadParameterChart = loadParameterChart;
+        loadParameterChart = function() {
+            fetchJson('/api/pv/chart?period=' + parameterPeriod + '&parameter=' + selectedParameter)
+                .then((response) => {
+                    if (!response.success) return;
+                    
+                    const labelMap = {
+                        voltage: 'Tegangan (V)',
+                        current: 'Arus (A)',
+                        temperature: 'Suhu (C)',
+                        lux: 'Lux',
+                        power: 'Daya (W)',
+                    };
+                    
+                    parameterChart.options.scales.y.title.text = labelMap[selectedParameter] || 'Nilai Parameter';
+                    parameterChart.data.datasets[0].label = labelMap[selectedParameter] || 'Parameter';
+                    storeParameterChartData(response.labels, response.data);
+                });
         };
 
     </script>
