@@ -792,85 +792,14 @@
             }
 
             isRefreshing = true;
-            
-            // Fetch all chart data in parallel for speed
-            Promise.all([
-                fetchJson('/api/pv/power-output?period=' + powerPeriod),
-                fetchJson('/api/pv/environment?period=' + envPeriod),
-                fetchJson('/api/pv/chart?period=' + parameterPeriod + '&parameter=' + selectedParameter),
-                fetchJson('/api/pv/latest')
-            ]).then(([powerResponse, envResponse, paramResponse, latestResponse]) => {
-                // Update power chart
-                if (powerResponse.success && powerChart) {
-                    storePowerChartData(powerResponse.labels, powerResponse.voltage, powerResponse.current);
-                }
-                
-                // Update environment chart
-                if (envResponse.success && environmentChart) {
-                    storeEnvironmentChartData(envResponse.labels, envResponse.lux, envResponse.temperature);
-                }
-                
-                // Update parameter chart
-                if (paramResponse.success && parameterChart) {
-                    const labelMap = {
-                        voltage: 'Tegangan (V)',
-                        current: 'Arus (A)',
-                        temperature: 'Suhu (C)',
-                        lux: 'Lux',
-                        power: 'Daya (W)',
-                    };
-                    parameterChart.options.scales.y.title.text = labelMap[selectedParameter] || 'Nilai Parameter';
-                    parameterChart.data.datasets[0].label = labelMap[selectedParameter] || 'Parameter';
-                    storeParameterChartData(paramResponse.labels, paramResponse.data);
-                }
-                
-                // Update latest metrics
-                if (latestResponse.success && latestResponse.data) {
-                    const latest = latestResponse.data;
-                    const isOffline = latestResponse.isOffline;
-                    const lastUpdateTime = latestResponse.lastUpdateTime;
+            refreshLatestMetrics();
+            loadPowerChart();
+            loadEnvironmentChart();
+            loadParameterChart();
 
-                    const statusBadge = document.getElementById('statusBadge');
-                    if (isOffline) {
-                        statusBadge.classList.add('offline');
-                        statusBadge.innerHTML = '<span class="live-dot"></span><div><div>OFFLINE</div><div class="offline-text">Last update ' + lastUpdateTime + '</div></div>';
-                        document.querySelectorAll('.stat-card').forEach(card => card.classList.add('offline'));
-                    } else {
-                        statusBadge.classList.remove('offline');
-                        statusBadge.innerHTML = '<span class="live-dot"></span>LIVE MONITORING';
-                        document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('offline'));
-                    }
-
-                    if (isOffline) {
-                        updateMetric('voltage', null, 'V', 2);
-                        updateMetric('current', null, 'A', 2);
-                        updateMetric('lux', null, 'Lux', 2);
-                        updateMetric('temperature', null, 'C', 2);
-                        updateChange('voltage', null);
-                        updateChange('current', null);
-                        updateChange('lux', null);
-                        updateChange('temperature', null);
-                    } else {
-                        updateMetric('voltage', Number(latest.voltage), 'V', 2);
-                        updateMetric('current', Number(latest.current), 'A', 2);
-                        updateMetric('lux', Number(latest.lux), 'Lux', 2);
-                        updateMetric('temperature', Number(latest.temperature), 'C', 2);
-                        updateChange('voltage', Number(latest.voltage_change_percent));
-                        updateChange('current', Number(latest.current_change_percent));
-                        updateChange('lux', Number(latest.lux_change_percent));
-                        updateChange('temperature', Number(latest.temperature_change_percent));
-                    }
-                }
-
-                setTimeout(() => {
-                    isRefreshing = false;
-                }, 500);
-            }).catch(err => {
-                console.error('Data refresh error:', err);
-                setTimeout(() => {
-                    isRefreshing = false;
-                }, 500);
-            });
+            setTimeout(() => {
+                isRefreshing = false;
+            }, 1500);
         }
 
         function loadPowerChart() {

@@ -29,36 +29,27 @@ class PvDashboardController extends Controller
      */
     public function getChartData(Request $request)
     {
-        $period = $request->query('period', '1H');
+        $period = $request->query('period', '1H'); // 1H, 24H, 7D
         $parameter = $request->query('parameter', 'lux');
 
         $data = $this->getDataByPeriod($period);
 
         $format = $this->getTimestampFormat($period);
-        $labels = $data->map(fn ($item) => $item->created_at->format($format))->values();
+        $labels = $data->map(fn ($item) => $item->created_at->format($format));
         $values = match ($parameter) {
-            'voltage' => $data->pluck('voltage')->values(),
-            'current' => $data->pluck('current')->values(),
-            'temperature' => $data->pluck('temperature')->values(),
-            'lux' => $data->pluck('lux')->values(),
-            'power' => $data->map(fn ($item) => $item->voltage * $item->current)->values(),
-            default => $data->pluck('lux')->values(),
-        };
-
-        $cacheMinutes = match($period) {
-            '1H' => 2,
-            '24H' => 5,
-            '7D' => 30,
-            default => 2
+            'voltage' => $data->pluck('voltage'),
+            'current' => $data->pluck('current'),
+            'temperature' => $data->pluck('temperature'),
+            'lux' => $data->pluck('lux'),
+            'power' => $data->map(fn ($item) => $item->voltage * $item->current),
+            default => $data->pluck('lux'),
         };
 
         return response()->json([
-            'labels' => $labels,
-            'data' => $values,
+            'labels' => $labels->values(),
+            'data' => $values->values(),
             'success' => true,
-        ], 200, [
-            'Cache-Control' => 'public, max-age=' . ($cacheMinutes * 60),
-        ], JSON_UNESCAPED_UNICODE);
+        ]);
     }
 
     /**
@@ -71,25 +62,16 @@ class PvDashboardController extends Controller
         $data = $this->getDataByPeriod($period);
 
         $format = $this->getTimestampFormat($period);
-        $labels = $data->map(fn ($item) => $item->created_at->format($format))->values();
-        $voltageData = $data->pluck('voltage')->values();
-        $currentData = $data->pluck('current')->values();
-
-        $cacheMinutes = match($period) {
-            '1H' => 2,
-            '24H' => 5,
-            '7D' => 30,
-            default => 2
-        };
+        $labels = $data->map(fn ($item) => $item->created_at->format($format));
+        $voltageData = $data->pluck('voltage');
+        $currentData = $data->pluck('current');
 
         return response()->json([
-            'labels' => $labels,
-            'voltage' => $voltageData,
-            'current' => $currentData,
+            'labels' => $labels->values(),
+            'voltage' => $voltageData->values(),
+            'current' => $currentData->values(),
             'success' => true,
-        ], 200, [
-            'Cache-Control' => 'public, max-age=' . ($cacheMinutes * 60),
-        ], JSON_UNESCAPED_UNICODE);
+        ]);
     }
 
     /**
@@ -102,25 +84,16 @@ class PvDashboardController extends Controller
         $data = $this->getDataByPeriod($period);
 
         $format = $this->getTimestampFormat($period);
-        $labels = $data->map(fn ($item) => $item->created_at->format($format))->values();
-        $tempData = $data->pluck('temperature')->values();
-        $luxData = $data->pluck('lux')->values();
-
-        $cacheMinutes = match($period) {
-            '1H' => 2,
-            '24H' => 5,
-            '7D' => 30,
-            default => 5
-        };
+        $labels = $data->map(fn ($item) => $item->created_at->format($format));
+        $tempData = $data->pluck('temperature');
+        $luxData = $data->pluck('lux');
 
         return response()->json([
-            'labels' => $labels,
-            'temperature' => $tempData,
-            'lux' => $luxData,
+            'labels' => $labels->values(),
+            'temperature' => $tempData->values(),
+            'lux' => $luxData->values(),
             'success' => true,
-        ], 200, [
-            'Cache-Control' => 'public, max-age=' . ($cacheMinutes * 60),
-        ], JSON_UNESCAPED_UNICODE);
+        ]);
     }
 
     /**
