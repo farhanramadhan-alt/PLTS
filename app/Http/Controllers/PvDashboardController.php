@@ -29,27 +29,27 @@ class PvDashboardController extends Controller
      */
     public function getChartData(Request $request)
     {
-        $period = $request->query('period', '1H'); // 1H, 24H, 7D
+        $period = $request->query('period', '1H');
         $parameter = $request->query('parameter', 'lux');
 
         $data = $this->getDataByPeriod($period);
 
         $format = $this->getTimestampFormat($period);
-        $labels = $data->map(fn ($item) => $item->created_at->format($format));
+        $labels = $data->map(fn ($item) => $item->created_at->format($format))->values();
         $values = match ($parameter) {
-            'voltage' => $data->pluck('voltage'),
-            'current' => $data->pluck('current'),
-            'temperature' => $data->pluck('temperature'),
-            'lux' => $data->pluck('lux'),
-            'power' => $data->map(fn ($item) => $item->voltage * $item->current),
-            default => $data->pluck('lux'),
+            'voltage' => $data->pluck('voltage')->values(),
+            'current' => $data->pluck('current')->values(),
+            'temperature' => $data->pluck('temperature')->values(),
+            'lux' => $data->pluck('lux')->values(),
+            'power' => $data->map(fn ($item) => $item->voltage * $item->current)->values(),
+            default => $data->pluck('lux')->values(),
         };
 
         return response()->json([
-            'labels' => $labels->values(),
-            'data' => $values->values(),
+            'labels' => $labels,
+            'data' => $values,
             'success' => true,
-        ]);
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -62,16 +62,16 @@ class PvDashboardController extends Controller
         $data = $this->getDataByPeriod($period);
 
         $format = $this->getTimestampFormat($period);
-        $labels = $data->map(fn ($item) => $item->created_at->format($format));
-        $voltageData = $data->pluck('voltage');
-        $currentData = $data->pluck('current');
+        $labels = $data->map(fn ($item) => $item->created_at->format($format))->values();
+        $voltageData = $data->pluck('voltage')->values();
+        $currentData = $data->pluck('current')->values();
 
         return response()->json([
-            'labels' => $labels->values(),
-            'voltage' => $voltageData->values(),
-            'current' => $currentData->values(),
+            'labels' => $labels,
+            'voltage' => $voltageData,
+            'current' => $currentData,
             'success' => true,
-        ]);
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -84,16 +84,16 @@ class PvDashboardController extends Controller
         $data = $this->getDataByPeriod($period);
 
         $format = $this->getTimestampFormat($period);
-        $labels = $data->map(fn ($item) => $item->created_at->format($format));
-        $tempData = $data->pluck('temperature');
-        $luxData = $data->pluck('lux');
+        $labels = $data->map(fn ($item) => $item->created_at->format($format))->values();
+        $tempData = $data->pluck('temperature')->values();
+        $luxData = $data->pluck('lux')->values();
 
         return response()->json([
-            'labels' => $labels->values(),
-            'temperature' => $tempData->values(),
-            'lux' => $luxData->values(),
+            'labels' => $labels,
+            'temperature' => $tempData,
+            'lux' => $luxData,
             'success' => true,
-        ]);
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**

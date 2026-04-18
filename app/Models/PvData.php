@@ -79,7 +79,8 @@ class PvData extends Model
      */
     public static function getChartData($startDate = null, $endDate = null, $limit = 100)
     {
-        $query = self::query();
+        $query = self::query()
+            ->select(['id', 'voltage', 'current', 'temperature', 'lux', 'created_at']);
 
         if ($startDate && $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate]);
@@ -89,18 +90,23 @@ class PvData extends Model
             $query->where('created_at', '<=', $endDate);
         }
 
-        // Limit query to last 500 records for performance
-        $allData = $query->orderBy('created_at', 'asc')->limit(500)->get();
+        // Fetch data with limit + apply smart sampling in DB
+        $allData = $query
+            ->orderBy('created_at', 'asc')
+            ->limit(500)
+            ->get(['id', 'voltage', 'current', 'temperature', 'lux', 'created_at']);
 
         if ($allData->isEmpty()) {
             return collect([]);
         }
 
-        // Smart sampling: if more than 50 records, sample down
-        if ($allData->count() > 50) {
-            $sampleInterval = max(1, intdiv($allData->count(), 50));
-            return $allData->filter(function ($item, $index) use ($sampleInterval) {
-                return $index % $sampleInterval === 0;
+        $count = $allData->count();
+        
+        // Smart sampling: reduce to ~40-50 points for better chart performance
+        if ($count > 50) {
+            $sampleInterval = intdiv($count, 40);
+            return $allData->values()->filter(function ($item, $index) use ($sampleInterval) {
+                return $index % $sampleInterval === 0 || $index === $count - 1; // Always include last point
             });
         }
 
