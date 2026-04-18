@@ -569,7 +569,7 @@
         let envPeriod = '24H';
         let parameterPeriod = '24H';
         let selectedParameter = 'lux';
-        const POLLING_INTERVAL_MS = 3000; // 3 seconds
+        const POLLING_INTERVAL_MS = 300000; // 5 minutes
         let isRefreshing = false;
 
         document.addEventListener('DOMContentLoaded', () => {
