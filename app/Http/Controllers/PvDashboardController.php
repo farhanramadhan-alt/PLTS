@@ -45,11 +45,20 @@ class PvDashboardController extends Controller
             default => $data->pluck('lux')->values(),
         };
 
+        $cacheMinutes = match($period) {
+            '1H' => 2,
+            '24H' => 5,
+            '7D' => 30,
+            default => 2
+        };
+
         return response()->json([
             'labels' => $labels,
             'data' => $values,
             'success' => true,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        ], 200, [
+            'Cache-Control' => 'public, max-age=' . ($cacheMinutes * 60),
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -66,12 +75,21 @@ class PvDashboardController extends Controller
         $voltageData = $data->pluck('voltage')->values();
         $currentData = $data->pluck('current')->values();
 
+        $cacheMinutes = match($period) {
+            '1H' => 2,
+            '24H' => 5,
+            '7D' => 30,
+            default => 2
+        };
+
         return response()->json([
             'labels' => $labels,
             'voltage' => $voltageData,
             'current' => $currentData,
             'success' => true,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        ], 200, [
+            'Cache-Control' => 'public, max-age=' . ($cacheMinutes * 60),
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -88,12 +106,21 @@ class PvDashboardController extends Controller
         $tempData = $data->pluck('temperature')->values();
         $luxData = $data->pluck('lux')->values();
 
+        $cacheMinutes = match($period) {
+            '1H' => 2,
+            '24H' => 5,
+            '7D' => 30,
+            default => 5
+        };
+
         return response()->json([
             'labels' => $labels,
             'temperature' => $tempData,
             'lux' => $luxData,
             'success' => true,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        ], 200, [
+            'Cache-Control' => 'public, max-age=' . ($cacheMinutes * 60),
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     /**

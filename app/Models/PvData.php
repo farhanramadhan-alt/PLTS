@@ -79,37 +79,35 @@ class PvData extends Model
      */
     public static function getChartData($startDate = null, $endDate = null, $limit = 100)
     {
-        $query = self::query()
-            ->select(['id', 'voltage', 'current', 'temperature', 'lux', 'created_at']);
-
+        $baseQuery = 'SELECT id, voltage, current, temperature, lux, created_at FROM pv_data';
+        
         if ($startDate && $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        } elseif ($startDate) {
-            $query->where('created_at', '>=', $startDate);
-        } elseif ($endDate) {
-            $query->where('created_at', '<=', $endDate);
+            $results = \DB::select(
+                $baseQuery . ' WHERE created_at BETWEEN ? AND ? ORDER BY created_at ASC LIMIT 300',
+                [$startDate, $endDate]
+            );
+        } else {
+            $results = \DB::select($baseQuery . ' ORDER BY created_at ASC LIMIT 300');
         }
-
-        // Fetch data with limit + apply smart sampling in DB
-        $allData = $query
-            ->orderBy('created_at', 'asc')
-            ->limit(500)
-            ->get(['id', 'voltage', 'current', 'temperature', 'lux', 'created_at']);
-
-        if ($allData->isEmpty()) {
+        
+        if (empty($results)) {
             return collect([]);
         }
 
-        $count = $allData->count();
+        $count = count($results);
         
-        // Smart sampling: reduce to ~40-50 points for better chart performance
-        if ($count > 50) {
-            $sampleInterval = intdiv($count, 40);
-            return $allData->values()->filter(function ($item, $index) use ($sampleInterval) {
-                return $index % $sampleInterval === 0 || $index === $count - 1; // Always include last point
-            });
+        // Aggressive sampling: target 25-30 points
+        if ($count > 30) {
+            $sampleInterval = max(1, intdiv($count, 25));
+            $sampled = [];
+            foreach ($results as $index => $item) {
+                if ($index % $sampleInterval === 0 || $index === $count - 1) {
+                    $sampled[] = $item;
+                }
+            }
+            return collect($sampled)->map(fn($row) => (object)$row);
         }
 
-        return $allData;
+        return collect($results)->map(fn($row) => (object)$row);
     }
 }
