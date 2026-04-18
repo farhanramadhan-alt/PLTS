@@ -89,31 +89,21 @@ class PvData extends Model
             $query->where('created_at', '<=', $endDate);
         }
 
-        $allData = $query->orderBy('created_at', 'asc')->get();
+        // Limit query to last 500 records for performance
+        $allData = $query->orderBy('created_at', 'asc')->limit(500)->get();
 
-        // Sample data every 30 minutes
         if ($allData->isEmpty()) {
             return collect([]);
         }
 
-        $sampledData = collect();
-        $lastSampledTime = null;
-        $intervalMinutes = 1; // Changed from 30 to 1 minute for testing
-
-        foreach ($allData as $item) {
-            if ($lastSampledTime === null) {
-                // Always include the first item
-                $sampledData->push($item);
-                $lastSampledTime = $item->created_at;
-            } else {
-                // Include if at least 1 minute have passed since last sample
-                if ($item->created_at->diffInMinutes($lastSampledTime) >= $intervalMinutes) {
-                    $sampledData->push($item);
-                    $lastSampledTime = $item->created_at;
-                }
-            }
+        // Smart sampling: if more than 50 records, sample down
+        if ($allData->count() > 50) {
+            $sampleInterval = max(1, intdiv($allData->count(), 50));
+            return $allData->filter(function ($item, $index) use ($sampleInterval) {
+                return $index % $sampleInterval === 0;
+            });
         }
 
-        return $sampledData;
+        return $allData;
     }
 }
